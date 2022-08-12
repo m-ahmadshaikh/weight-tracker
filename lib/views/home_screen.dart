@@ -24,8 +24,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .collection('userWeights')
         .doc(ref.watch(authProvider).user.uid)
         .collection('weights');
-    var date = DateTime.now();
-    var formattedDate = "${date.day}-${date.month}-${date.year}";
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -78,17 +76,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: () async {
                         // inputList.add(stext);
                         if (stext.isNotEmpty) {
-                          await FirebaseFirestore.instance
-                              .collection('userWeights')
-                              .doc(ref.watch(authProvider).user.uid)
-                              .collection('weights')
-                              .add({
-                            'sortedDate': FieldValue.serverTimestamp(),
-                            'time': formattedDate,
-                            'weight': stext
-                          });
+                          await ref.read(authProvider).addWeight(stext);
                         }
-                        setState(() {});
                       },
                       child: const Text('Add Weight')),
                   const SizedBox(
@@ -117,41 +106,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             Map<String, dynamic> data =
                                 document.data()! as Map<String, dynamic>;
                             return Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  data['sortedDate'] != null
-                                      ? Text(
+                              child: data['sortedDate'] != null
+                                  ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
                                           'Time: ${(data['sortedDate'] as Timestamp).toDate().hour}:${(data['sortedDate'] as Timestamp).toDate().minute}',
                                           style: const TextStyle(fontSize: 18),
-                                        )
-                                      : const Text(' '),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    'Weight: ${data['weight']}',
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        FirebaseFirestore.instance
-                                            .collection('userWeights')
-                                            .doc(ref
-                                                .watch(authProvider)
-                                                .user
-                                                .uid)
-                                            .collection('weights')
-                                            .doc(document.id)
-                                            .delete();
-                                      },
-                                      child: const Text('Delete'))
-                                ],
-                                // subtitle: Text(data['company']),
-                              ),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Text(
+                                          'Weight: ${data['weight']}',
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        ElevatedButton(
+                                            onPressed: () {
+                                              FirebaseFirestore.instance
+                                                  .collection('userWeights')
+                                                  .doc(ref
+                                                      .watch(authProvider)
+                                                      .user
+                                                      .uid)
+                                                  .collection('weights')
+                                                  .doc(document.id)
+                                                  .delete();
+                                            },
+                                            child: const Text('Delete'))
+                                      ],
+                                      // subtitle: Text(data['company']),
+                                    )
+                                  : const CircularProgressIndicator(),
                             );
                           }).toList(),
                         );
