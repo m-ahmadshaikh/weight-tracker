@@ -75,10 +75,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     height: 10,
                   ),
                   ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         // inputList.add(stext);
                         if (stext.isNotEmpty) {
-                          FirebaseFirestore.instance
+                          await FirebaseFirestore.instance
                               .collection('userWeights')
                               .doc(ref.watch(authProvider).user.uid)
                               .collection('weights')
@@ -107,7 +107,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ConnectionState.waiting) {
                           return const Text("Loading");
                         }
-
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
                         return ListView(
                           children: snapshot.data!.docs
                               .map((DocumentSnapshot document) {
@@ -117,10 +120,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'Time: ${(data['sortedDate'] as Timestamp).toDate().hour}:${(data['sortedDate'] as Timestamp).toDate().minute}',
-                                    style: const TextStyle(fontSize: 18),
-                                  ),
+                                  data['sortedDate'] != null
+                                      ? Text(
+                                          'Time: ${(data['sortedDate'] as Timestamp).toDate().hour}:${(data['sortedDate'] as Timestamp).toDate().minute}',
+                                          style: const TextStyle(fontSize: 18),
+                                        )
+                                      : const Text(' '),
                                   const SizedBox(
                                     width: 10,
                                   ),
